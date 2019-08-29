@@ -1,0 +1,70 @@
+import requests
+from bs4 import BeautifulSoup
+import smtplib
+from selenium import webdriver
+from socket import *
+import time
+
+url="https://www.amazon.in/gp/product/0062327186?pf_rd_p=63f66ec5-8654-4c00-843f-8b32d0b1d487&pf_rd_r=WD3H3WMVH6STV5T56W7A"
+headers={"user-agent":'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0'}
+
+page=requests.get(url,headers=headers)
+
+
+varsoup=BeautifulSoup(page.content,'html.parser')
+#print(varsoup.prettify())
+
+title=varsoup.find(id="productTitle").get_text()
+price=varsoup.find(class_="a-size-medium a-color-price inlineBlock-display offer-price a-text-normal price3P").get_text()
+convprice=float(price[1:5])
+
+print (title)
+print(convprice)
+
+
+def sendmail():
+    server=smtplib.SMTP("smtp.gmail.com",587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login("#enter your email id through which u want ur email to be sent ","#add ur password for same")
+    subject="price fel down"
+    body="check the price link https://www.amazon.in/gp/product/0062327186?pf_rd_p=63f66ec5-8654-4c00-843f-8b32d0b1d487&pf_rd_r=WD3H3WMVH6STV5T56W7A"
+    msg=f"subject:{subject}\n\n{body}"
+    server.sendmail(
+        "#enter your email id through which u want ur email to be sent",
+        "#enter your email id on which mail is to be received",
+        msg
+    )
+    print("email has sent")
+    server.quit()
+def automate():
+    username="#add your amazon email id"
+    pwd="#add your amazon password"
+    bim="#BHIM UPI number"
+    #url2="https://www.amazon.in/gp/product/0062327186?pf_rd_p=63f66ec5-8654-4c00-843f-8b32d0b1d487&pf_rd_r=WD3H3WMVH6STV5T56W7A"
+    driver=webdriver.Chrome("C:\\Users\\siddhesh\\Downloads\\cc\\chromedriver")
+    driver.get(url)
+    driver.find_element_by_id("buy-now-button").click()
+    driver.find_element_by_id("ap_email").send_keys(username)
+    driver.find_element_by_id("continue").click()
+    driver.find_element_by_id("ap_password").send_keys(pwd)
+    driver.find_element_by_id("signInSubmit").click()
+    driver.find_element_by_xpath("//div[. = 'BHIM UPI']").click()
+    driver.find_element_by_name("__sif_encryptedVPA_collect").send_keys(bim)
+    driver.find_element_by_xpath('//span[. = "Verify"]').click()
+    time.sleep(10)
+    driver.find_element_by_xpath('//span[. ="Continue"]').click()
+    time.sleep(10)
+    driver.find_element_by_name("placeYourOrder1").click()
+    time.sleep(10)
+
+
+if(convprice<250.0):
+    sendmail()
+    automate()
+
+else:
+    print("no price change")
+
+
